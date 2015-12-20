@@ -14,11 +14,11 @@ fn main() {
     let mut floor = 0;
     let mut basement: Option<usize> = None;
     for (i, c) in contents.chars().enumerate() {
-        match c {
-            ')' => floor -= 1,
-            '(' => floor += 1,
-            _ => {}
-        }
+        floor += match c {
+            ')' => -1,
+            '(' => 1,
+            _ => 0,
+        };
 
         if floor == -1 && basement.is_none() {
             basement = Some(i + 1);
