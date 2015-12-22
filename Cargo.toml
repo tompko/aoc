@@ -6,3 +6,4 @@ authors = ["tompko <tompko@gmail.com>"]
 [dependencies]
 rust-crypto="^0.2"
 itertools = "0.4"
+pcre = "0.2.1"
