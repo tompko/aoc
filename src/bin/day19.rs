@@ -61,8 +61,7 @@ fn search(med: &str, reps: &Vec<Replacement>) -> u32 {
         }
         queue.sort_by(|a, b| b.molecule.len().cmp(&a.molecule.len()));
     }
-
-    0
+    unreachable!();
 }
 
 fn main() {
