@@ -1,2 +1,3 @@
-# aoc2016
-Advent Of Code 2016
+# Advent Of Code 2016
+
+Solutions to http://adventofcode.com/2016
