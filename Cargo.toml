@@ -5,3 +5,4 @@ authors = ["tompko"]
 
 [dependencies]
 regex="0.1"
+rust-crypto = "^0.2"
