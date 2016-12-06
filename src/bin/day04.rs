@@ -34,17 +34,17 @@ impl Room {
             }
         }
 
-        let mut freqs: Vec<_> = counts.into_iter().map(|(a, b)| (b, a)).collect();
+        let mut freqs: Vec<_> = counts.into_iter().collect();
         freqs.sort_by(|a, b| {
-            match a.0.cmp(&b.0) {
+            match a.1.cmp(&b.1) {
                 Ordering::Less => Ordering::Greater,
                 Ordering::Greater => Ordering::Less,
-                Ordering::Equal => a.1.cmp(&b.1),
+                Ordering::Equal => a.0.cmp(&b.0),
             }
         });
 
         freqs.into_iter().zip(self.checksum.chars()).all(|pair| {
-            (pair.0).1 == pair.1
+            (pair.0).0 == pair.1
         })
     }
 
