@@ -10,12 +10,15 @@ fn play(path: &str, players: usize) -> usize {
     seen.insert((0, 0));
 
     for p in path.chars() {
-        match p{
-            '<' => xs[active] -= 1,
-            '>' => xs[active] += 1,
-            '^' => ys[active] += 1,
-            'v' => ys[active] -= 1,
-            _ => {}
+        xs[active] += match p {
+            '<' => -1,
+            '>' => 1,
+            _ => 0,
+        };
+        ys[active] += match p {
+            '^' => 1,
+            'v' => -1,
+            _ => 0,
         };
         seen.insert((xs[active], ys[active]));
         active = (active + 1) % players;
@@ -25,14 +28,10 @@ fn play(path: &str, players: usize) -> usize {
 }
 
 fn main() {
-    let mut f = File::open("day3.in")
-        .ok()
-        .expect("Error opening input");
+    let mut f = File::open("inputs/day03.in").unwrap();
     let mut contents = String::new();
 
-    f.read_to_string(&mut contents)
-        .ok()
-        .expect("Error reading input");
+    f.read_to_string(&mut contents).unwrap();
     let contents = contents.trim();
     println!("{}", play(contents, 1));
     println!("{}", play(contents, 2));

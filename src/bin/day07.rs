@@ -37,31 +37,28 @@ fn parse(line: &str) -> Gate {
 
     if msig.is_some() {
         let msig = msig.unwrap();
-        return Gate{
+        Gate{
             inputs: vec![msig.group(1).to_string()],
             op: Operation::Nop,
             output: msig.group(2).to_string(),
         }
-    }
-    if mnop.is_some() {
+    } else if mnop.is_some() {
         let mnop = mnop.unwrap();
-        return Gate {
+        Gate {
             inputs: vec![mnop.group(1).to_string()],
             op: Operation::Nop,
             output: mnop.group(2).to_string(),
         }
-    }
-    if mno.is_some() {
+    } else if mno.is_some() {
         let mno = mno.unwrap();
-        return Gate {
+        Gate {
             inputs: vec![mno.group(1).to_string()],
             op: Operation::Not,
             output: mno.group(2).to_string(),
         }
-    }
-    if mop.is_some() {
+    } else {
         let mop = mop.unwrap();
-        return Gate {
+        Gate {
             inputs: vec![mop.group(1).to_string(), mop.group(3).to_string()],
             op: match mop.group(2) {
                 "AND" => Operation::And,
@@ -73,17 +70,15 @@ fn parse(line: &str) -> Gate {
             output: mop.group(4).to_string(),
         }
     }
-
-    unreachable!()
 }
 
-fn simulate(gates: &Vec<Gate>, overrides: Vec<(&str, u16)>) -> HashMap<String, u16> {
+fn simulate(gates: &[Gate], overrides: Vec<(&str, u16)>) -> HashMap<String, u16> {
     let mut signals: HashMap<String, u16> = HashMap::new();
     for i in 0..(1<<16) {
         signals.insert(i.to_string(), i as u16);
     }
 
-    for o in overrides.iter() {
+    for o in &overrides {
         let &(s, a) = o;
         signals.insert(s.to_string(), a);
     }
@@ -97,7 +92,7 @@ fn simulate(gates: &Vec<Gate>, overrides: Vec<(&str, u16)>) -> HashMap<String, u
         }
 
         let mut all_inputs = true;
-        for i in g.inputs.iter() {
+        for i in &g.inputs {
             if !signals.contains_key(i) {
                 all_inputs = false;
                 break;
@@ -145,9 +140,7 @@ fn simulate(gates: &Vec<Gate>, overrides: Vec<(&str, u16)>) -> HashMap<String, u
 }
 
 fn main() {
-    let f = File::open("day7.in")
-        .ok()
-        .expect("Failed to open input");
+    let f = File::open("inputs/day07.in").unwrap();
     let file = BufReader::new(&f);
 
     let mut gates: Vec<_> = Vec::new();
