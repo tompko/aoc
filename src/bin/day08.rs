@@ -27,13 +27,11 @@ impl Screen {
             let x = caps.at(1).unwrap().parse().unwrap();
             let y = caps.at(2).unwrap().parse().unwrap();
             self.rect(x, y);
-        }
-        if let Some(caps) = ROW.captures(instr) {
+        } else if let Some(caps) = ROW.captures(instr) {
             let y = caps.at(1).unwrap().parse().unwrap();
             let b = caps.at(2).unwrap().parse().unwrap();
             self.rot_row(y, b);
-        }
-        if let Some(caps) = COL.captures(instr) {
+        } else if let Some(caps) = COL.captures(instr) {
             let x = caps.at(1).unwrap().parse().unwrap();
             let b = caps.at(2).unwrap().parse().unwrap();
             self.rot_col(x, b);
