@@ -33,6 +33,9 @@ impl State {
         let nodes = &self.cluster.nodes;
 
         for node in nodes.values() {
+            if node.used == 0 {
+                continue
+            }
             if node.x > 0 {
                 let node_b = nodes.get(&(node.x-1, node.y)).unwrap();
                 if node.used < node_b.avail {
@@ -45,13 +48,13 @@ impl State {
                     ret.push(self.move_node(node.x, node.y, node_b.x, node_b.y));
                 }
             }
-            if node.x < self.cluster.x {
+            if node.x < self.cluster.x - 1{
                 let node_b = nodes.get(&(node.x+1, node.y)).unwrap();
                 if node.used < node_b.avail {
                     ret.push(self.move_node(node.x, node.y, node_b.x, node_b.y));
                 }
             }
-            if node.y < self.cluster.y {
+            if node.y < self.cluster.y - 1 {
                 let node_b = nodes.get(&(node.x, node.y+1)).unwrap();
                 if node.used < node_b.avail {
                     ret.push(self.move_node(node.x, node.y, node_b.x, node_b.y));
@@ -77,14 +80,14 @@ impl State {
         cluster.nodes.insert((node_a.x, node_a.y), Node{
             x: node_a.x,
             y: node_a.y,
-            used: node_a.used + node_b.used,
-            avail: node_a.used - node_b.used,
+            used: 0,
+            avail: node_a.avail + node_a.used,
         });
         cluster.nodes.insert((node_b.x, node_b.y), Node{
             x: node_b.x,
             y: node_b.y,
-            used: 0,
-            avail: node_b.avail + node_b.used,
+            used: node_b.used + node_a.used,
+            avail: node_b.avail - node_a.used,
         });
 
         State{
@@ -107,8 +110,8 @@ fn parse(reader: &mut BufRead) -> Cluster {
 
         let x = caps.at(1).unwrap().parse().unwrap();
         let y = caps.at(2).unwrap().parse().unwrap();
-        let used = caps.at(4).unwrap().parse().unwrap();
-        let avail = caps.at(5).unwrap().parse().unwrap();
+        let used = caps.at(3).unwrap().parse().unwrap();
+        let avail = caps.at(4).unwrap().parse().unwrap();
 
         hm.insert((x,y), Node{
             x: x,
@@ -136,6 +139,7 @@ fn solve(cluster: Cluster) -> u32 {
     });
 
     while let Some(state) = states.pop_back() {
+        println!("{} {}", state.steps, states.len());
         if state.target == (0, 0) {
             return state.steps;
         }
