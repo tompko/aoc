@@ -1,6 +1,7 @@
 extern crate astar;
 extern crate regex;
 
+use std::collections::HashMap;
 use std::cmp::max;
 use std::io::{BufReader, BufRead};
 use std::fs::File;
@@ -144,7 +145,6 @@ fn parse(reader: &mut BufRead) -> Cluster {
 }
 
 fn solve(mut problem: Problem) -> u32 {
-    println!("{:?}", problem.start());
     let path = astar(&mut problem);
 
     path.unwrap().len() as u32 - 1
