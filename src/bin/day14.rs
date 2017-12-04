@@ -1,5 +1,3 @@
-#![feature(slice_patterns)]
-
 extern crate crypto;
 
 use std::collections::HashMap;
@@ -37,7 +35,8 @@ fn has_triple(key: &str) -> Option<String> {
     let v : Vec<_> = key.chars().collect();
     let mut windows = v.windows(3);
 
-    while let Some(&[a,b,c]) = windows.next() {
+    while let Some(x) = windows.next() {
+        let (a, b, c) = (x[0], x[1], x[2]);
         if a == b && b == c {
             return Some(format!("{}{}{}{}{}", a, a, a, a, a))
         }

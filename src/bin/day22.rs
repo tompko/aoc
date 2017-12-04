@@ -1,19 +1,93 @@
+extern crate astar;
 extern crate regex;
 
+use std::collections::HashMap;
 use std::cmp::max;
-use std::collections::{HashMap, VecDeque};
 use std::io::{BufReader, BufRead};
 use std::fs::File;
+use astar::{SearchProblem, astar};
 use regex::Regex;
 
-#[derive(Clone)]
 struct Cluster {
     nodes: HashMap<(usize, usize), Node>,
     x: usize,
     y: usize,
 }
 
-#[derive(Copy, Clone)]
+impl Cluster {
+    fn to_problem(&self) -> Problem {
+        let mut maze = Vec::new();
+        let mut empty = (0,0);
+        for y in 0..self.y {
+            let mut row = Vec::new();
+            for x in 0..self.x {
+                let ref node = self.nodes[&(x, y)];
+                if node.used > 200 {
+                    row.push(false);
+                } else {
+                    row.push(true);
+                }
+                if node.used == 0 {
+                    empty = (x, y);
+                }
+            }
+            maze.push(row);
+        }
+        Problem{
+            cells: maze,
+            empty: empty,
+        }
+    }
+}
+
+struct Problem {
+    cells: Vec<Vec<bool>>,
+    empty: (usize, usize),
+}
+
+impl SearchProblem for Problem {
+    type Node = State;
+    type Cost = usize;
+    type Iter = std::vec::IntoIter<(State, usize)>;
+
+    fn start(&self) -> State {
+        State{
+            target: (self.cells[0].len()-1, 0),
+            empty: self.empty.clone(),
+        }
+    }
+
+    fn is_end(&self, state: &State) -> bool {
+        state.target == (0, 0)
+    }
+
+    fn heuristic(&self, state: &State) -> usize {
+        abssub(state.target.0, state.empty.0) +
+        abssub(state.target.1, state.empty.1) +
+        state.target.0 + state.target.1 - 1
+    }
+
+    fn neighbors(&mut self, state: &State) -> std::vec::IntoIter<(State, usize)> {
+        let mut ret = Vec::new();
+        if state.empty.0 > 0 && self.cells[state.empty.1][state.empty.0-1] {
+            ret.push((state.step(-1, 0), 1));
+        }
+        if state.empty.0 < self.cells[0].len() - 1 && self.cells[state.empty.1][state.empty.0+1] {
+            ret.push((state.step(1, 0), 1));
+        }
+
+        if state.empty.1 > 0 && self.cells[state.empty.1-1][state.empty.0] {
+            ret.push((state.step(0, -1), 1));
+        }
+        if state.empty.1 < self.cells.len() - 1 && self.cells[state.empty.1+1][state.empty.0] {
+            ret.push((state.step(0, 1), 1));
+        }
+
+        ret.into_iter()
+    }
+}
+
+#[derive(Debug)]
 struct Node {
     x: usize,
     y: usize,
@@ -21,79 +95,19 @@ struct Node {
     avail: u32,
 }
 
+#[derive(Debug, PartialEq, Eq, Hash)]
 struct State{
     target: (usize, usize),
-    cluster: Cluster,
-    steps: u32,
+    empty: (usize, usize),
 }
 
 impl State {
-    fn neighbours(&self) -> Vec<Self> {
-        let mut ret = Vec::new();
-        let nodes = &self.cluster.nodes;
-
-        for node in nodes.values() {
-            if node.used == 0 {
-                continue
-            }
-            if node.x > 0 {
-                let node_b = nodes.get(&(node.x-1, node.y)).unwrap();
-                if node.used < node_b.avail {
-                    ret.push(self.move_node(node.x, node.y, node_b.x, node_b.y));
-                }
-            }
-            if node.y > 0 {
-                let node_b = nodes.get(&(node.x, node.y-1)).unwrap();
-                if node.used < node_b.avail {
-                    ret.push(self.move_node(node.x, node.y, node_b.x, node_b.y));
-                }
-            }
-            if node.x < self.cluster.x - 1{
-                let node_b = nodes.get(&(node.x+1, node.y)).unwrap();
-                if node.used < node_b.avail {
-                    ret.push(self.move_node(node.x, node.y, node_b.x, node_b.y));
-                }
-            }
-            if node.y < self.cluster.y - 1 {
-                let node_b = nodes.get(&(node.x, node.y+1)).unwrap();
-                if node.used < node_b.avail {
-                    ret.push(self.move_node(node.x, node.y, node_b.x, node_b.y));
-                }
-            }
-        }
-
-        ret
-    }
-
-    fn move_node(&self, fx: usize, fy: usize, sx: usize, sy: usize) -> Self {
-        let mut cluster = self.cluster.clone();
-
-        let node_a = cluster.nodes.get(&(fx, fy)).unwrap().clone();
-        let node_b = cluster.nodes.get(&(sx, sy)).unwrap().clone();
-
-        let target = if self.target == (sx, sy) {
-            (fx, fy)
-        } else {
-            self.target
-        };
-
-        cluster.nodes.insert((node_a.x, node_a.y), Node{
-            x: node_a.x,
-            y: node_a.y,
-            used: 0,
-            avail: node_a.avail + node_a.used,
-        });
-        cluster.nodes.insert((node_b.x, node_b.y), Node{
-            x: node_b.x,
-            y: node_b.y,
-            used: node_b.used + node_a.used,
-            avail: node_b.avail - node_a.used,
-        });
-
-        State{
-            target: target,
-            cluster: cluster,
-            steps: self.steps + 1,
+    fn step(&self, x: i32, y: i32) -> State {
+        let new_empty = ((self.empty.0 as i32 + x) as usize, (self.empty.1 as i32 + y) as usize);
+        let new_target = if new_empty == self.target { self.empty } else { self.target };
+        State {
+            target: new_target,
+            empty: new_empty,
         }
     }
 }
@@ -130,26 +144,10 @@ fn parse(reader: &mut BufRead) -> Cluster {
     }
 }
 
-fn solve(cluster: Cluster) -> u32 {
-    let mut states = VecDeque::new();
-    states.push_front(State{
-        target: (cluster.x - 1, 0),
-        cluster: cluster,
-        steps: 0,
-    });
+fn solve(mut problem: Problem) -> u32 {
+    let path = astar(&mut problem);
 
-    while let Some(state) = states.pop_back() {
-        println!("{} {}", state.steps, states.len());
-        if state.target == (0, 0) {
-            return state.steps;
-        }
-
-        for n in state.neighbours() {
-            states.push_front(n);
-        }
-    }
-
-    unreachable!();
+    path.unwrap().len() as u32 - 1
 }
 
 fn main() {
@@ -177,6 +175,14 @@ fn main() {
 
     println!("1: {}", count);
 
-    let part2 = solve(cluster);
+    let part2 = solve(cluster.to_problem());
     println!("2: {}", part2);
+}
+
+fn abssub(a: usize, b: usize) -> usize {
+    if a > b {
+        a - b
+    } else {
+        b - a
+    }
 }
