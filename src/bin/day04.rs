@@ -39,15 +39,17 @@ fn main() {
             let time = Utc.datetime_from_str(time_str, "%Y-%m-%d %H:%M").unwrap();
             let guard = scap.get(2).unwrap().as_str().parse::<u32>().unwrap();
             let typ = EventType::NewShift(guard);
-            events.push(Event{ time: time, typ: typ });
+            events.push(Event{ time, typ });
         } else if let Some(scap) = wake_re.captures(&line) {
             let time_str = scap.get(1).unwrap().as_str();
             let time = Utc.datetime_from_str(time_str, "%Y-%m-%d %H:%M").unwrap();
-            events.push(Event{ time: time, typ: EventType::Wake });
+            let typ = EventType::Wake;
+            events.push(Event{ time, typ });
         } else if let Some(scap) = sleep_re.captures(&line) {
             let time_str = scap.get(1).unwrap().as_str();
             let time = Utc.datetime_from_str(time_str, "%Y-%m-%d %H:%M").unwrap();
-            events.push(Event{ time: time, typ: EventType::Sleep });
+            let typ = EventType::Sleep;
+            events.push(Event{ time, typ });
         }
     }
 
@@ -61,7 +63,7 @@ fn main() {
         match e.typ {
             EventType::NewShift(guard) => {
                 current_guard = guard;
-                guard_times.entry(current_guard).or_insert(HashMap::new());
+                guard_times.entry(current_guard).or_insert_with(HashMap::new);
             }
             EventType::Wake => {
                 let wake_minute = e.time.minute();
