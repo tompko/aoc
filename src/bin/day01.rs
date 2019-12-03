@@ -3,10 +3,7 @@ use std::io::{BufRead, BufReader};
 
 fn total_fuel(a: i32) -> i32 {
     let fuel = a/3 - 2;
-    if fuel <= 0 {
-        return 0;
-    }
-    return fuel + total_fuel(fuel);
+    if fuel <= 0 { 0 } else { fuel + total_fuel(fuel) }
 }
 
 fn main() {

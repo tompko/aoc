@@ -34,7 +34,7 @@ fn main() {
     file.read_to_string(&mut contents).expect("Failed to read from input");
     let contents = contents.trim();
 
-    let mut program: Vec<i32> = contents.split(",").map(|x| x.parse::<i32>().unwrap()).collect();
+    let mut program: Vec<i32> = contents.split(',').map(|x| x.parse::<i32>().unwrap()).collect();
 
     program[1] = 12;
     program[2] = 2;
