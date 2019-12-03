@@ -3,4 +3,14 @@
 [[package]]
 name = "aoc2019"
 version = "0.1.0"
+dependencies = [
+ "reduce 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+]
 
+[[package]]
+name = "reduce"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[metadata]
+"checksum reduce 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "75b1fa5668b02f2a69746bba558f8f98cc087b123a587fd959122872ad9a3f3c"

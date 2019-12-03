@@ -5,3 +5,4 @@ authors = ["Chris Tompkinson"]
 edition = "2018"
 
 [dependencies]
+reduce = "0.1"
