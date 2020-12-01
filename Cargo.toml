@@ -1,0 +1,12 @@
+[package]
+name = "aoc2016"
+version = "0.1.0"
+authors = ["tompko"]
+
+[dependencies]
+regex="0.1"
+rust-crypto = "^0.2"
+pcre = "0.2"
+lazy_static = "0.2"
+permutohedron = "0.2"
+astar = "0.1"
