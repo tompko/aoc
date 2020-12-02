@@ -1,24 +1,23 @@
-extern crate pcre;
+extern crate fancy_regex;
 
-use pcre::Pcre;
+use fancy_regex::Regex;
 use std::fs::File;
 use std::io::BufReader;
 use std::io::BufRead;
 
 fn nice1(word: &str) -> bool {
-    let mut one = Pcre::compile(r"(?:[aeiou].*?){3}").unwrap();
-    let mut two = Pcre::compile(r"(.)\1").unwrap();
-    let mut three = Pcre::compile(r"ab|cd|pq|xy").unwrap();
+    let one = Regex::new(r"(?:[aeiou].*?){3}").unwrap();
+    let two = Regex::new(r"(.)\1").unwrap();
+    let three = Regex::new(r"ab|cd|pq|xy").unwrap();
 
-    one.exec(word).and(two.exec(word)).is_some() &&
-        !three.exec(word).is_some()
+    one.is_match(word).unwrap() && two.is_match(word).unwrap() && !three.is_match(word).unwrap()
 }
 
 fn nice2(word: &str) -> bool {
-    let mut one = Pcre::compile(r"(..).*\1").unwrap();
-    let mut two = Pcre::compile(r"(.).\1").unwrap();
+    let one = Regex::new(r"(..).*\1").unwrap();
+    let two = Regex::new(r"(.).\1").unwrap();
 
-    one.exec(word).and(two.exec(word)).is_some()
+    one.is_match(word).unwrap() && two.is_match(word).unwrap()
 }
 
 fn main() {

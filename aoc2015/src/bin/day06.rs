@@ -1,10 +1,10 @@
-extern crate pcre;
+extern crate fancy_regex;
 
 use std::fs::File;
 use std::io::BufReader;
 use std::io::BufRead;
 use std::str::FromStr;
-use pcre::Pcre;
+use fancy_regex::Regex;
 
 enum Action {
     On,
@@ -22,16 +22,16 @@ impl FromStr for Instruction {
     type Err = &'static str;
 
     fn from_str(line: &str) -> Result<Instruction, &'static str> {
-        let mut re = Pcre::compile(r"(turn on|toggle|turn off) (\d+),(\d+) through (\d+),(\d+)").unwrap();
-        let m = re.exec(line).expect("Failed to parse line");
+        let re = Regex::new(r"(turn on|toggle|turn off) (\d+),(\d+) through (\d+),(\d+)").unwrap();
+        let m = re.captures(line).expect("Failed to parse line").expect("No groups found");
 
-        let start = (m.group(2).parse().unwrap(), m.group(3).parse().unwrap());
-        let stop = (m.group(4).parse().unwrap(), m.group(5).parse().unwrap());
+        let start = (m.get(2).unwrap().as_str().parse().unwrap(), m.get(3).unwrap().as_str().parse().unwrap());
+        let stop = (m.get(4).unwrap().as_str().parse().unwrap(), m.get(5).unwrap().as_str().parse().unwrap());
 
         Ok(Instruction{
             start: start,
             stop: stop,
-            action: match m.group(1) {
+            action: match m.get(1).unwrap().as_str() {
                 "turn on" => Action::On,
                 "toggle" => Action::Toggle,
                 "turn off" => Action::Off,
@@ -48,7 +48,7 @@ struct Board {
 impl Board {
     pub fn new() -> Self {
         Board{
-            board: Box::new([[0; 1000]; 1000]),
+            board: vec![[0; 1000]; 1000].into_boxed_slice(),
         }
     }
 

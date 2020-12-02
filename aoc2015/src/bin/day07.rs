@@ -1,11 +1,11 @@
-extern crate pcre;
+extern crate fancy_regex;
 
 use std::fs::File;
 use std::io::BufReader;
 use std::io::BufRead;
 use std::collections::HashMap;
 use std::collections::VecDeque;
-use pcre::Pcre;
+use fancy_regex::Regex;
 
 #[derive(Clone, Debug)]
 enum Operation {
@@ -25,49 +25,49 @@ struct Gate {
 }
 
 fn parse(line: &str) -> Gate {
-    let mut sig = Pcre::compile(r"^(\d+) -> (\w)+").unwrap();
-    let mut nop = Pcre::compile(r"^(\w+) -> (\w+)").unwrap();
-    let mut no = Pcre::compile(r"^NOT (\w+) -> (\w+)").unwrap();
-    let mut op = Pcre::compile(r"^(\w+) (\w+) (\w+) -> (\w+)").unwrap();
+    let sig = Regex::new(r"^(\d+) -> (\w)+").unwrap();
+    let nop = Regex::new(r"^(\w+) -> (\w+)").unwrap();
+    let no = Regex::new(r"^NOT (\w+) -> (\w+)").unwrap();
+    let op = Regex::new(r"^(\w+) (\w+) (\w+) -> (\w+)").unwrap();
 
-    let msig = sig.exec(line);
-    let mnop = nop.exec(line);
-    let mno = no.exec(line);
-    let mop = op.exec(line);
+    let msig = sig.captures(line).unwrap();
+    let mnop = nop.captures(line).unwrap();
+    let mno = no.captures(line).unwrap();
+    let mop = op.captures(line).unwrap();
 
     if msig.is_some() {
         let msig = msig.unwrap();
         Gate{
-            inputs: vec![msig.group(1).to_string()],
+            inputs: vec![msig.get(1).unwrap().as_str().to_owned()],
             op: Operation::Nop,
-            output: msig.group(2).to_string(),
+            output: msig.get(2).unwrap().as_str().to_owned(),
         }
     } else if mnop.is_some() {
         let mnop = mnop.unwrap();
         Gate {
-            inputs: vec![mnop.group(1).to_string()],
+            inputs: vec![mnop.get(1).unwrap().as_str().to_owned()],
             op: Operation::Nop,
-            output: mnop.group(2).to_string(),
+            output: mnop.get(2).unwrap().as_str().to_owned(),
         }
     } else if mno.is_some() {
         let mno = mno.unwrap();
         Gate {
-            inputs: vec![mno.group(1).to_string()],
+            inputs: vec![mno.get(1).unwrap().as_str().to_owned()],
             op: Operation::Not,
-            output: mno.group(2).to_string(),
+            output: mno.get(2).unwrap().as_str().to_owned(),
         }
     } else {
         let mop = mop.unwrap();
         Gate {
-            inputs: vec![mop.group(1).to_string(), mop.group(3).to_string()],
-            op: match mop.group(2) {
+            inputs: vec![mop.get(1).unwrap().as_str().to_owned(), mop.get(3).unwrap().as_str().to_owned()],
+            op: match mop.get(2).unwrap().as_str() {
                 "AND" => Operation::And,
                 "OR" => Operation::Or,
                 "LSHIFT" => Operation::LShift,
                 "RSHIFT" => Operation::RShift,
                 _ => unreachable!(),
             },
-            output: mop.group(4).to_string(),
+            output: mop.get(4).unwrap().as_str().to_owned(),
         }
     }
 }

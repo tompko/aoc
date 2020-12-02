@@ -1,5 +1,5 @@
 extern crate permutohedron;
-extern crate pcre;
+extern crate fancy_regex;
 
 use std::fs::File;
 use std::io::BufReader;
@@ -7,23 +7,23 @@ use std::io::BufRead;
 use std::collections::{HashMap, HashSet};
 use std::cmp::{min, max};
 use permutohedron::Heap;
-use pcre::Pcre;
+use fancy_regex::Regex;
 
 fn main() {
-    let f = File::open("day9.in").unwrap();
+    let f = File::open("inputs/day09.in").unwrap();
     let file = BufReader::new(&f);
 
     let mut distances : HashMap<(String,String), i32> = HashMap::new();
     let mut cities: HashSet<String> = HashSet::new();
-    let mut re = Pcre::compile(r"(\w+) to (\w+) = (\d+)").unwrap();
+    let re = Regex::new(r"(\w+) to (\w+) = (\d+)").unwrap();
     for line in file.lines() {
         let line = line.unwrap();
 
-        let m = re.exec(&line).unwrap();
-        let c1 = m.group(1).to_string();
-        let c2 = m.group(2).to_string();
+        let m = re.captures(&line).unwrap().unwrap();
+        let c1 = m.get(1).unwrap().as_str().to_owned();
+        let c2 = m.get(2).unwrap().as_str().to_owned();
 
-        let d = m.group(3).parse().unwrap();
+        let d = m.get(3).unwrap().as_str().parse().unwrap();
 
         distances.insert((c1.clone(), c2.clone()), d);
         distances.insert((c2.clone(), c1.clone()), d);

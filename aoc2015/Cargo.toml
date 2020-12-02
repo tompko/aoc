@@ -6,5 +6,6 @@ authors = ["tompko <tompko@gmail.com>"]
 [dependencies]
 rust-crypto="^0.2"
 itertools = "0.4"
-pcre = "0.2.1"
+fancy-regex = "0.4.1"
 permutohedron = "0.2"
+serde_json = "1.0.59"
